@@ -1,0 +1,19 @@
+<!-- Launches bfly camera image acquisition and a view window -->
+
+<launch>
+      <!-- params file is an argument -->
+      <arg name="bfly_params_file" default="$(find btr_bfly_camera)/launch/bflyParams.yaml"/>
+
+      <!--  Launch bfly camera -->
+      <group ns="$(env ROBOT)">
+            <node pkg="btr_bfly_camera"
+                  type="btr_bfly_camera_node"
+                  name="btr_bfly_camera_node"
+                  args=""
+                  output="screen">
+                  <rosparam command="load" file="$(arg bfly_params_file)"/>  
+            </node>
+      </group>
+
+</launch>
+
