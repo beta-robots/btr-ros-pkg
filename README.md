@@ -1,4 +1,4 @@
 btr-libs
 ========
 
-Libraries created at Beta Robots
+ROS Wrappers of some software blocks developed at Beta Robots
