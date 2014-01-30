@@ -3,8 +3,9 @@
   <name>btr_ball_detector</name>
   <version>0.0.0</version>
   <description>
-        This detects circl-like shapes in the input image.
-        It requires and input image and publish the set of circles detected at frame rate.
+        This package implements a circle-like shape detector of the input image.
+        It requires and input image and publish, at frame rate, a marked image
+        and a stamped array of circle centers and radius.
   </description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
@@ -24,6 +25,7 @@
 
   <build_depend>roscpp</build_depend>
   <build_depend>rospy</build_depend>
+  <build_depend>message_generation</build_depend>  
   <build_depend>sensor_msgs</build_depend>  
   <build_depend>geometry_msgs</build_depend>  
   <build_depend>dynamic_reconfigure</build_depend>
@@ -32,6 +34,7 @@
   
   <run_depend>roscpp</run_depend>
   <run_depend>rospy</run_depend>
+  <run_depend>message_runtime</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>dynamic_reconfigure</run_depend>

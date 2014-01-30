@@ -21,7 +21,8 @@ int main(int argc, char **argv)
             if ( detector.newImage() )
             {
                   detector.process();
-                  detector.publish();
+                  detector.publishImage();
+                  detector.publishCircles();
             }
             
             //execute pending callbacks

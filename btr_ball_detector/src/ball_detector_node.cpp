@@ -2,6 +2,7 @@
 
 CballDetectorNode::CballDetectorNode() : nh(ros::this_node::getName()) , it(this->nh)
 {
+      //detector config struct
       detectorConfig detCfg;
 
       //get user parameters from dynamic reconfigure (yaml entries)
@@ -13,17 +14,19 @@ CballDetectorNode::CballDetectorNode() : nh(ros::this_node::getName()) , it(this
       nh.getParam("hough_accum_th", detCfg.hough_accum_th); 
       nh.getParam("min_radius", detCfg.min_radius);
       nh.getParam("max_radius", detCfg.max_radius); 
-
-      //sets publishers
-      imagePub = it.advertise("image_out", 100);
-      
-      //sets subscribers
-      imageSubs = it.subscribe("image_in", 1, &CballDetectorNode::imageCallback, this);
       
       //sets config and prints it
       detector.setParameters(detCfg);
-      detector.printConfig();
+      detector.printConfig();      
+
+      //sets publishers
+      imagePub = it.advertise("image_out", 100);
+      circlesPub = nh.advertise<btr_ball_detector::circleSetStamped>("circleSet", 100);
       
+      //sets subscribers
+      imageSubs = it.subscribe("image_in", 1, &CballDetectorNode::imageCallback, this);
+      //nh.subscribe("cameraInfo_in", 100, &CballDetectorNode::cameraInfoCallback, this);
+            
       //resets newImageFlag
       newImageFlag = false;
 }
@@ -50,42 +53,74 @@ void CballDetectorNode::process()
 {
       if ( cvImgPtrSubs!=NULL )
       {
-            //std::cout << "process()!" << std::endl;
-            
             //sets input image
             detector.setInputImage(cvImgPtrSubs->image);
             
             //detect circles
-            detector.houghDetection();
+            detector.houghDetection(this->imgEncoding);
       }
 }
 
-void CballDetectorNode::publish()
+void CballDetectorNode::publishImage()
 {
       //image_raw topic
       cvImgPub.header.seq ++;
-      cvImgPub.header.stamp = ros::Time::now();
+      cvImgPub.header.stamp = ros::Time::now();//To do: get time stamp from input image 
       cvImgPub.header.frame_id = "detector"; //To do: get frame_id from input image
-      cvImgPub.encoding = sensor_msgs::image_encodings::BGR8;
+      switch(imgEncoding)
+      {
+            case IMG_RGB8: cvImgPub.encoding = sensor_msgs::image_encodings::RGB8; break;
+            case IMG_MONO: cvImgPub.encoding = sensor_msgs::image_encodings::MONO8; break;
+            default: cvImgPub.encoding = sensor_msgs::image_encodings::MONO8; break;
+      }
       detector.getOutputImage(cvImgPub.image);
       imagePub.publish(cvImgPub.toImageMsg());
 }
 
-void CballDetectorNode::imageCallback(const sensor_msgs::ImageConstPtr& msg)
+void CballDetectorNode::publishCircles()
+{
+      int ii; 
+      
+      //clears and resize the message
+      circlesMsg.circles.clear();
+      circlesMsg.circles.resize(detector.howManyCircles());
+      
+      //fill header
+      circlesMsg.header.seq ++;
+      circlesMsg.header.stamp = ros::Time::now(); //To do: get time stamp from input image 
+      circlesMsg.header.frame_id = "detector"; //To do: get frame_id from input image
+      
+      //fill circle data
+      for(ii=0; ii<detector.howManyCircles(); ii++ )
+      {
+            detector.getCircle(ii, circlesMsg.circles[ii].x, circlesMsg.circles[ii].y, circlesMsg.circles[ii].z);
+      }
+      
+      //publish message
+      circlesPub.publish(circlesMsg);
+}
+
+void CballDetectorNode::imageCallback(const sensor_msgs::ImageConstPtr & msg)
 {
       try
       {
-            //std::cout << "imageCallback()!" << std::endl;
-            this->cvImgPtrSubs = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-            //newImageFlag = true;
+            //std::cout << __LINE__ << ": msg->encoding = " << msg->encoding << std::endl;
+            if ( msg->encoding.compare(sensor_msgs::image_encodings::MONO8) == 0 ) imgEncoding = IMG_MONO;
+            if ( msg->encoding.compare(sensor_msgs::image_encodings::RGB8) == 0 ) imgEncoding = IMG_RGB8;
+            this->cvImgPtrSubs = cv_bridge::toCvCopy(msg, msg->encoding);
       }
       catch (cv_bridge::Exception& e)
       {
             ROS_ERROR("cv_bridge exception: %s", e.what());
             return;
-      }
+      }      
       
       //indicates a new image is available
       newImageFlag = true;
       return; 
+}
+
+void CballDetectorNode::cameraInfoCallback(const sensor_msgs::CameraInfo & msg)
+{
+      // to do ??
 }
