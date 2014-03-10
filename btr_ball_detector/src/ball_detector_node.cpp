@@ -27,7 +27,7 @@ CballDetectorNode::CballDetectorNode() : nh(ros::this_node::getName()) , it(this
       imageSubs = it.subscribe("image_in", 1, &CballDetectorNode::imageCallback, this);
       //nh.subscribe("cameraInfo_in", 100, &CballDetectorNode::cameraInfoCallback, this);
             
-      //resets newImageFlag
+      //initializes newImageFlag
       newImageFlag = false;
 }
 
@@ -65,7 +65,9 @@ void CballDetectorNode::publishImage()
 {
       //image_raw topic
       cvImgPub.header.seq ++;
-      cvImgPub.header.stamp = ros::Time::now();//To do: get time stamp from input image 
+      cvImgPub.header.stamp.sec = this->tsec;
+      cvImgPub.header.stamp.nsec = this->tnsec;
+      //cvImgPub.header.stamp = ros::Time::now();
       cvImgPub.header.frame_id = "detector"; //To do: get frame_id from input image
       switch(imgEncoding)
       {
@@ -87,7 +89,9 @@ void CballDetectorNode::publishCircles()
       
       //fill header
       circlesMsg.header.seq ++;
-      circlesMsg.header.stamp = ros::Time::now(); //To do: get time stamp from input image 
+      circlesMsg.header.stamp.sec = this->tsec;
+      circlesMsg.header.stamp.nsec = this->tnsec;      
+      //circlesMsg.header.stamp = ros::Time::now(); //To do: get time stamp from input image 
       circlesMsg.header.frame_id = "detector"; //To do: get frame_id from input image
       
       //fill circle data
@@ -105,8 +109,8 @@ void CballDetectorNode::imageCallback(const sensor_msgs::ImageConstPtr & msg)
       try
       {
             //std::cout << __LINE__ << ": msg->encoding = " << msg->encoding << std::endl;
-            if ( msg->encoding.compare(sensor_msgs::image_encodings::MONO8) == 0 ) imgEncoding = IMG_MONO;
-            if ( msg->encoding.compare(sensor_msgs::image_encodings::RGB8) == 0 ) imgEncoding = IMG_RGB8;
+            if ( msg->encoding.compare(sensor_msgs::image_encodings::MONO8) == 0 ) this->imgEncoding = IMG_MONO;
+            if ( msg->encoding.compare(sensor_msgs::image_encodings::RGB8) == 0 ) this->imgEncoding = IMG_RGB8;
             this->cvImgPtrSubs = cv_bridge::toCvCopy(msg, msg->encoding);
       }
       catch (cv_bridge::Exception& e)
@@ -116,7 +120,9 @@ void CballDetectorNode::imageCallback(const sensor_msgs::ImageConstPtr & msg)
       }      
       
       //indicates a new image is available
-      newImageFlag = true;
+      this->tsec = msg->header.stamp.sec;
+      this->tnsec = msg->header.stamp.nsec;
+      this->newImageFlag = true;
       return; 
 }
 

@@ -47,8 +47,14 @@ class CballDetectorNode
             //dynamic reconfigure 
             btr_ball_detector::detectorParamsConfig config; 
             
-            //other 
+            //flag indicating a new image has been received
             bool newImageFlag;
+            
+            //image time stamp
+            unsigned int tsec;
+            unsigned int tnsec;
+            
+            //img encoding id
             unsigned int imgEncoding;
             
             
