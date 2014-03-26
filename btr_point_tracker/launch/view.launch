@@ -1,0 +1,15 @@
+<!-- Launches a visualization window which is subscribed to point tracker output image -->
+
+<launch>
+
+      <!--  Visualization of image -->
+      <node name="image_view"
+            pkg="image_view" 
+            type="image_view" >
+            <param name="window_name" value="POINT TRACKER OUTPUT" type="str" />
+            <param name="autosize" value="true"/>
+            <remap from="/image" to="/$(env ROBOT)/btr_point_tracker_node/image_out"/>
+      </node>
+      
+</launch>
+

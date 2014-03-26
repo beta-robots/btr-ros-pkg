@@ -1,0 +1,5 @@
+verbose_mode: 0
+min_hessian: 250
+min_features: 40
+max_correspondence_dist: 10
+feature_type: 3
