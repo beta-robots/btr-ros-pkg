@@ -111,8 +111,8 @@ void CpointTrackerNode::publishTracks()
       ii=0;
       for(iiTrack = trackList.begin(); iiTrack != trackList.end(); iiTrack++ )
       {
-            tracksMsg.tracks[ii].x = 0;
-            tracksMsg.tracks[ii].y = 0;
+            tracksMsg.tracks[ii].x = iiTrack->getX();
+            tracksMsg.tracks[ii].y = iiTrack->getY();
             tracksMsg.tracks[ii].z = (double)(iiTrack->getId());
             ii++;
       }
