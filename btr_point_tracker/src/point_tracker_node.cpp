@@ -16,11 +16,12 @@ CpointTrackerNode::CpointTrackerNode() : nh(ros::this_node::getName()) , it(this
       params.featureType = (featureTypeEnum)auxParam; 
       
       //Fixed params (not set by the user)
-      params.old_track_latency = 0;
-      params.viewMode = VIEW_POINTS;
+      params.old_track_latency = 0.1;
+      params.viewMode = VIEW_TRACKS;
       
       //sets config and prints it
       tracker.setParameters(params);
+      tracker.printConfig();
       
       //sets publishers
       imagePub = it.advertise("image_out", 100);
@@ -56,14 +57,20 @@ void CpointTrackerNode::process()
 {
       if ( cvImgPtrSubs!=NULL )
       {
+            //set tracker time stamp
+            tracker.setTimeStamp((double)this->tsec + (double)this->tnsec*1e-9);
+            
             //find point features 
             tracker.findFeatures(cvImgPtrSubs->image,false);
             
             //find point pair correspondences
             tracker.findCorrespondences();
             
-            //update individual feature tracks
+            //update tracks (add news & remove olds)
             tracker.updateTracks();
+            
+            //build output image with track marks
+            tracker.buildOutputImage();
             
             //switch frame and keypoint buffers
             tracker.switchBuffers();
@@ -78,7 +85,7 @@ void CpointTrackerNode::publishImage()
       cvImgPub.header.stamp.nsec = this->tnsec;
       cvImgPub.header.frame_id = "detector"; //To do: get frame_id from input image
       cvImgPub.encoding = this->imgEncoding;
-      cvImgPub.image = tracker.getDisplayImage();
+      tracker.getDisplayImage(cvImgPub.image);
       imagePub.publish(cvImgPub.toImageMsg());
 }
 
@@ -86,7 +93,7 @@ void CpointTrackerNode::publishTracks()
 {
       int ii; 
       std::list<CtrackStamped>::iterator iiTrack;
-      
+            
       //gets track data from tracker
       std::list<CtrackStamped> & trackList = tracker.getTrackList();
       
@@ -100,13 +107,14 @@ void CpointTrackerNode::publishTracks()
       tracksMsg.header.stamp.nsec = this->tnsec;      
       tracksMsg.header.frame_id = "tracker"; //To do: get frame_id from input image
       
-      //fill circle data
+      //fill track data
       ii=0;
       for(iiTrack = trackList.begin(); iiTrack != trackList.end(); iiTrack++ )
       {
-            tracksMsg.tracks[ii].x = 0;//iiTrack  getX
-            tracksMsg.tracks[ii].y = 0;//iiTrack getY
-            tracksMsg.tracks[ii].z = (double)iiTrack->getId();
+            tracksMsg.tracks[ii].x = 0;
+            tracksMsg.tracks[ii].y = 0;
+            tracksMsg.tracks[ii].z = (double)(iiTrack->getId());
+            ii++;
       }
       
       //publish message
