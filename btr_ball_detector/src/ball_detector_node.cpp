@@ -21,7 +21,7 @@ CballDetectorNode::CballDetectorNode() : nh(ros::this_node::getName()) , it(this
 
       //sets publishers
       imagePub = it.advertise("image_out", 100);
-      circlesPub = nh.advertise<btr_ball_detector::circleSetStamped>("circleSet", 100);
+      circlesPub = nh.advertise<btr_ball_detector::circleSetStamped>("circle_set", 100);
       
       //sets subscribers
       imageSubs = it.subscribe("image_in", 1, &CballDetectorNode::imageCallback, this);
@@ -67,7 +67,6 @@ void CballDetectorNode::publishImage()
       cvImgPub.header.seq ++;
       cvImgPub.header.stamp.sec = this->tsec;
       cvImgPub.header.stamp.nsec = this->tnsec;
-      //cvImgPub.header.stamp = ros::Time::now();
       cvImgPub.header.frame_id = "detector"; //To do: get frame_id from input image
       switch(imgEncoding)
       {
@@ -91,7 +90,6 @@ void CballDetectorNode::publishCircles()
       circlesMsg.header.seq ++;
       circlesMsg.header.stamp.sec = this->tsec;
       circlesMsg.header.stamp.nsec = this->tnsec;      
-      //circlesMsg.header.stamp = ros::Time::now(); //To do: get time stamp from input image 
       circlesMsg.header.frame_id = "detector"; //To do: get frame_id from input image
       
       //fill circle data
@@ -128,5 +126,5 @@ void CballDetectorNode::imageCallback(const sensor_msgs::ImageConstPtr & msg)
 
 void CballDetectorNode::cameraInfoCallback(const sensor_msgs::CameraInfo & msg)
 {
-      // to do ??
+      // nothing to do ...
 }

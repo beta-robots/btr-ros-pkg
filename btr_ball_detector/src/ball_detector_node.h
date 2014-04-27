@@ -57,15 +57,29 @@ class CballDetectorNode
             //img encoding id
             unsigned int imgEncoding;
             
+      protected: 
+            //callbacks to image subscription
+            void imageCallback(const sensor_msgs::ImageConstPtr & msg);
+            
+            //callbacks to camera info subscription
+            void cameraInfoCallback(const sensor_msgs::CameraInfo & msg);
             
       public:
+            //constructor
             CballDetectorNode();
+            
+            //destructor
             ~CballDetectorNode();
             
+            //checks if a new image has been received
             bool newImage();
+            
+            //execute circle detection with the cureent image
             void process();            
+            
+            //publish the output image (input image + marked circles)
             void publishImage();
+            
+            //publish the circle set data
             void publishCircles();
-            void imageCallback(const sensor_msgs::ImageConstPtr & msg);
-            void cameraInfoCallback(const sensor_msgs::CameraInfo & msg);
 };
