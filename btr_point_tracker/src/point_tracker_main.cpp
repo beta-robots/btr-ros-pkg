@@ -27,6 +27,9 @@ int main(int argc, char **argv)
             
             //execute pending callbacks
             ros::spinOnce(); 
+            
+            //relax to fit output rate
+            loop_rate.sleep();
       }
             
       //exit program

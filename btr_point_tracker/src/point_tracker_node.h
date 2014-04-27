@@ -57,15 +57,30 @@ class CpointTrackerNode
             //image time stamp
             unsigned int tsec;
             unsigned int tnsec;            
+
+      protected:
+            //callback to image subscription
+            void imageCallback(const sensor_msgs::ImageConstPtr & msg);
+            
+            //callback to camera info subscription
+            void cameraInfoCallback(const sensor_msgs::CameraInfo & msg);
             
       public:
+            //constructor
             CpointTrackerNode();
+            
+            //destructor
             ~CpointTrackerNode();
             
+            //checks if a new image has been received
             bool newImage();
-            void process();            
+            
+            //execute point tracker
+            void process();        
+            
+            //publish the output image (input image + marked tracks)
             void publishImage();
+            
+            //publish track data
             void publishTracks();
-            void imageCallback(const sensor_msgs::ImageConstPtr & msg);
-            void cameraInfoCallback(const sensor_msgs::CameraInfo & msg);
 };
